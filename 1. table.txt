@@ -1,0 +1,18 @@
+@EndUserText.label : 'Sales order table'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table ztb_v2_xl_upld {
+
+  key client         : abap.clnt not null;
+  key salesorder     : abap.numc(10) not null;
+  key salesorderitem : posnr not null;
+  salesorg           : vkorg;
+  soldtoparty        : abap.numc(10);
+  material           : matnr;
+  createdby          : erdat;
+  status             : abap.string(0);
+  message            : abap.string(0);
+
+}

@@ -1,0 +1,34 @@
+CLASS zcl_bgpf_uncntrl DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+    TYPES: tt_table TYPE TABLE OF ztb_v2_xl_upld WITH DEFAULT KEY.
+    INTERFACES if_serializable_object .
+    INTERFACES if_bgmc_operation .
+    INTERFACES if_bgmc_op_single_tx_uncontr .
+
+
+    METHODS constructor IMPORTING i_tab TYPE tt_table.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+    DATA: lt_table TYPE tt_table.
+ENDCLASS.
+
+
+
+CLASS zcl_bgpf_uncntrl IMPLEMENTATION.
+  METHOD constructor.
+    lt_table = i_tab.
+  ENDMETHOD.
+
+  METHOD if_bgmc_op_single_tx_uncontr~execute.
+    WAIT UP TO 5 SECONDS. " this is totally optional
+    " we will insert records in a db table
+    MODIFY ztb_v2_xl_upld FROM TABLE @lt_table.
+    COMMIT WORK.
+  ENDMETHOD.
+
+
+ENDCLASS.

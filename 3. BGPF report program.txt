@@ -1,0 +1,45 @@
+*&---------------------------------------------------------------------*
+*& Report zrpr_bgpf_uncntrl_starter
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zrpr_bgpf_uncntrl_starter.
+DATA:lt_table     TYPE TABLE OF ztb_v2_xl_upld,
+     lo_operation TYPE REF TO if_bgmc_op_single_tx_uncontr.
+
+DO 5 TIMES.
+  DATA(lv_index) = sy-index.
+  lt_table = VALUE #( BASE lt_table
+                      ( salesorder = |901{ lv_index }|
+                        salesorderitem = '0010'
+                        salesorg = 'ZTST'
+                        material = 'BGPF UNCNTRL'
+                        message = 'Testing BGPF uncntrl'
+                       ) ).
+ENDDO.
+DELETE FROM ztb_v2_xl_upld.
+
+"background job logic
+
+"1. we get the object of bgpf class and send the data
+lo_operation = NEW zcl_bgpf_uncntrl( i_tab = lt_table ).
+TRY.
+    "2. we will get the instance of the class (  bgpf factory ).
+    DATA(lo_instance) = cl_bgmc_process_factory=>get_default( ).
+    "3. we will create the process
+    DATA(lo_process) = lo_instance->create( ).
+    "4. we will set a name for the process to identify in background job
+    lo_process->set_name( 'Z_TEST_BGPF' ).
+    "5. we will set the operation with the actual data to execute
+    " which we obtained in step 1
+    lo_process->set_operation_tx_uncontrolled( lo_operation ).
+    "6. we will register the process to start
+    DATA(lo_monitor) =  lo_process->save_for_execution( ).
+    " 7. we will trigger the bgpf process
+    COMMIT WORK.
+    "8 . get the immediate state of bgpf process
+    DATA(lv_state) =  lo_monitor->get_state( ).
+    WRITE:/ 'Background Job state : ', lv_state.
+  CATCH cx_bgmc.
+    ROLLBACK WORK.
+ENDTRY.
